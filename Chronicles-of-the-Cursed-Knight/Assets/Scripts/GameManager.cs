@@ -62,7 +62,6 @@ public class GameManager : MonoBehaviour
             }
         }
 
-#if UNITY_EDITOR
         // Atajo de desarrollador: F4 para forzar la victoria instantánea
         if (Input.GetKeyDown(KeyCode.F4))
         {
@@ -77,7 +76,6 @@ public class GameManager : MonoBehaviour
             // Llamamos a la función que muestra la pantalla de victoria
             TriggerVictoryUI();
         }
-#endif
     }
 
     public void TriggerGameOverUI()
