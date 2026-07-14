@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement; // Necesario para el botón de ir al menú
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -13,6 +14,12 @@ public class GameManager : MonoBehaviour
 
     [Header("Pause UI")]
     [SerializeField] private GameObject pauseUIBG;
+
+    [Header("Cronómetro Arcade")]
+    public TextMeshProUGUI textoCronometro;
+    public float tiempoInicial = 90f;
+    private float tiempoActual;
+    private bool tiempoAgotado = false;
 
     public int key;
 
@@ -35,15 +42,15 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         key = 0;
+        tiempoActual = tiempoInicial; // Iniciamos el reloj
 
-        // Escondemos los menús moviéndolos hacia abajo (-1200) al iniciar
         if (gameOverUIBG != null) gameOverUIBG.transform.localPosition = new Vector3(0f, -1200f, 0f);
         if (pauseUIBG != null) pauseUIBG.transform.localPosition = new Vector3(0f, -1200f, 0f);
 
         if (AudioManager.instance != null)
         {
-            AudioManager.instance.StopSound("MenuTheme"); // Apaga la del menú
-            AudioManager.instance.PlaySound("GameTheme"); // Enciende la del juego
+            AudioManager.instance.StopSound("MenuTheme");
+            AudioManager.instance.PlaySound("GameTheme");
         }
     }
 
@@ -62,6 +69,26 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        // --- NUEVA LÓGICA DEL CRONÓMETRO ---
+        if (!isPaused && !tiempoAgotado)
+        {
+            tiempoActual -= Time.deltaTime; // Restar tiempo
+
+            // Convertir a minutos y segundos para el texto
+            int minutos = Mathf.FloorToInt(tiempoActual / 60F);
+            int segundos = Mathf.FloorToInt(tiempoActual - minutos * 60);
+            textoCronometro.text = string.Format("{0:00}:{1:00}", minutos, segundos);
+
+            // ¿Se acabó el tiempo?
+            if (tiempoActual <= 0)
+            {
+                tiempoActual = 0;
+                tiempoAgotado = true;
+                textoCronometro.text = "00:00";
+                TriggerGameOverUI(); // ¡El jugador pierde!
+            }
+        }
+
         // Atajo de desarrollador: F4 para forzar la victoria instantánea
         if (Input.GetKeyDown(KeyCode.F4))
         {
@@ -76,6 +103,17 @@ public class GameManager : MonoBehaviour
             // Llamamos a la función que muestra la pantalla de victoria
             TriggerVictoryUI();
         }
+    }
+
+    // Esta es la función que llamarán los enemigos al morir
+    public void SumarTiempo(float cantidad)
+    {
+        if (tiempoAgotado) return; // Si ya perdió, no sumar más
+
+        tiempoActual += cantidad;
+
+        // Opcional: Para darle un pequeño efecto visual al texto cuando suma tiempo
+        LeanTween.scale(textoCronometro.gameObject, new Vector3(1.5f, 1.5f, 1.5f), 0.1f).setLoopPingPong(1);
     }
 
     public void TriggerGameOverUI()

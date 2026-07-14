@@ -99,16 +99,26 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    public void TakeDamage(int damageAmount) {
+    public void TakeDamage(int damageAmount)
+    {
         if (maxHealth <= 0) return;
 
         maxHealth -= damageAmount;
         animator.SetTrigger(ANIM_HURT); // (O "Hurt" si no usaste la versión optimizada)
         CameraShake.instance.Shake(2.5f, .15f);
-        
+
         // Guardamos el texto generado y le enviamos el daño exacto
         GameObject floatingText = Instantiate(floatingTextPrefab, textSpawnPoint.position, Quaternion.identity);
         floatingText.GetComponent<FloatingText>().SetDamageText(damageAmount);
+
+        // --- NUEVO: RECOMPENSA DE TIEMPO AL MORIR ---
+        if (maxHealth <= 0)
+        {
+            if (GameManager.instance != null)
+            {
+                GameManager.instance.SumarTiempo(5f);
+            }
+        }
     }
 
     private void OnDrawGizmosSelected() {

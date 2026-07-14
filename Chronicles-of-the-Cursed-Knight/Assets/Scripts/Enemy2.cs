@@ -102,16 +102,27 @@ public class Enemy2 : MonoBehaviour {
         }
     }
 
-    public void TakeDamage(int damageAmount) {
+    public void TakeDamage(int damageAmount)
+    {
         if (maxHealth <= 0) return;
 
         maxHealth -= damageAmount;
         animator.SetTrigger(ANIM_HURT);
         CameraShake.instance.Shake(2.5f, .15f);
-        
+
         // feedback visual
-        if(floatingTextPrefab != null && textSpawnPoint != null) {
+        if (floatingTextPrefab != null && textSpawnPoint != null)
+        {
             Instantiate(floatingTextPrefab, textSpawnPoint.position, Quaternion.identity);
+        }
+
+        // --- NUEVO: RECOMPENSA DE TIEMPO AL MORIR ---
+        if (maxHealth <= 0)
+        {
+            if (GameManager.instance != null)
+            {
+                GameManager.instance.SumarTiempo(5f);
+            }
         }
     }
 
